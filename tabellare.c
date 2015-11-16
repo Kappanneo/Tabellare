@@ -1,38 +1,36 @@
 #include <stdio.h>
 #include "../klib.h"
 
-void abc(unsigned int);
-
 int main(int argc, char *argv[])
 {
-  if(argc>2)
+  VET("[numero_variabili] [mintermini_in_decimale]");
+
+  int var= unint(argv[1]); // numero variabili
+  int mint= argc-2; // numero mintermini
+  char minterm[mint][var+2]; // array bidimensionale: ogni riga è un minterm
+  // [numero di 1 nelle variabili] [variabili] ['\0']
+
+  ABC(var);
+
+  for(int x=0; x < mint; x++) // per ogni minterm
     {
-      int var= unint(argv[1]);
-      char minterm[argc-2][var];
-
-      abc(var);
-
-      for(int x=2; x < argc; x++)
+      int num= unint(argv[x+2]); // valore decimale
+	  
+      for(int v= var; v > 0; v--) // converte in binario
 	{
-	  int num= unint(argv[x]);
-	  for(int v= var-1; v >= 0; v--)
-	    {
-	      minterm[x-2][v]= (char) nascii(num%2);
-	      num/=2;
-	    }
-	  for(int y=0; y < var; y++)
-	    printf("%c",minterm[x-2][y]);
-	  puts("");
+	  minterm[x][v]= (char) nascii(num%2);
+	  num/=2;
 	}
-
-      puts("-----------------");
+      minterm[x][0]= nascii(match(minterm[x]+1,'1')); // conta gli '1' nel minterm
+      minterm[x][var+1]= '\0';
     }
-  return qualcosa(argc-2, "[numero_variabili] [mintermini_in_decimale]", argv[0]);
-}
 
-inline void abc(unsigned int n)
-{
-  for(char lettera= 'A'; lettera-64 <= n; lettera++)
-    printf("%c", lettera);
-  puts("");
+  for(int x=0; x < mint; x++) // per ogni minterm
+    {
+      printf("%s", &minterm[x][1]);
+      printf(" %c\n", minterm[x][0]); // stampa il numero di '1' 
+    }
+  puts("-----------------");
+
+  return 0;
 }
