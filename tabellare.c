@@ -3,8 +3,7 @@
 #include "../klib.h"
 
 void abc(unsigned int); // stampa le prime n lettere dell'alfabeto
-void charbin(long, char*, unsigned int); //converte un numero a binario in n char
-void ordinamint(char*, unsigned int, unsigned int); // ordina le stringhe in base al primo char
+void ordinamint(char**, unsigned int); // ordina le stringhe in base al primo char
 unsigned int impli(char* in, char* out, unsigned int mint, unsigned int var); // it's compli
 void compose(char*, char*, char*); // compone i primi due array nel terzo
 
@@ -28,7 +27,7 @@ int main(int argc, char *argv[])
       minterm[x][var+1]='\0';
     }
   
-  ordinamint(&(*minterm)[0], mint, var+2);
+  ordinamint(&minterm[var+2], mint);
 
   implicanti += impli( &(*minterm)[0], &(*impl)[0], mint, var+2 );
 
@@ -52,27 +51,18 @@ void abc(unsigned int n)
   puts("");
 }
 
-void charbin(long num, char* str, unsigned int len)
-{
-  for(int v= len; v > 0; v--)
-    {
-      str[v]= (char) nascii(num%2);
-      num/=2;
-    }
-}
-
-void ordinamint(char* minterm, unsigned int mint, unsigned int var)
+void ordinamint(char** minterm, unsigned int mint)
 {
   for(int z= mint; z > 0; z--)
     for(int x= 1; x < z; x++)
-      if(minterm[(x-1)*var] > minterm[x*var])
-	scambia( &minterm[(x-1)*var], &minterm[x*var]);
+      if(minterm[x-1][var] > minterm[x][var])
+	scambia( &minterm[x-1][var], &minterm[x][var]);
 }
 
 unsigned int impli(char* in, char* out, unsigned int mint, unsigned int var)
 {
   int ret= 0; //numero di minterm nuovi (aggiung controllo doppioni)
-  char m= '0'; // valore corrente di match
+  char m='0'; // valore corrente di match
   int x= 0;
   while(in[x*var]==m) //da rivedere da qui in poi
     {
