@@ -1,2 +1,2 @@
 # Tabellare
-Modularization of a program that solves boolean equations through tabular method. (Work in progress)
+Solves boolean equations through tabular method; working on the optimal coverage.
