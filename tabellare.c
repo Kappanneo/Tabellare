@@ -13,38 +13,93 @@ int main(int argc, char *argv[])
 {
   VET("[numero variabili] [mintermini in decimale]");
 
+  // aggiungi ulteriore controllo input
+
   const unsigned int var= unint(argv[1]); // numero variabili
-  unsigned int mint= argc-2; // numero mintermini
   char (*minterm)[var+2]= malloc(1024); // puntatore ad array di caratteri,  ogni riga: [numero di 1 nel minterm] [minterm] ['\0'] 
   unsigned int implicanti= 0; // numero implicanti primi
   char (*impl)[var+1]= malloc(1024); // ogni riga: [implicante] ['\0']
+  unsigned int cicli= 0;
+  unsigned int countdown= 2;
 
-  for(int x= 0; x < argc-2; x++) //compone ogni riga
+  while(countdown)
     {
-      charbin( unint(argv[2+x]), &(minterm[x])[0], var);
-      minterm[x][0]= nascii( match( &(minterm[x])[1],'1') ); // conta gli '1' nel minterm
-      minterm[x][var+1]='\0';
-    }
-  ordinamint(*minterm, mint, var+2); // ordinamento (*minterm => &(*minterm)[0])
+      unsigned int mint= argc-2; // numero mintermini
 
-  while(mint) // finchè restano dei minterm non coperti da implicanti primi
-    {
-      abc(var); // stampa i minterm
-      for(int x= 0; x < mint; x++) 
-	printf("%s %c\n", &(minterm[x])[1], minterm[x][0]);
-      puts("");
-
-      implicanti += impli( &(*minterm)[0], &(*impl)[0], &mint, var+2 ,implicanti); // magia nera
-
-      if(implicanti) // stampa gli implicanti primi (se ci sono)
-	{      
-	  puts("Implicanti primi:");
-	  abc(var);
-	  for(int x= 0; x < implicanti; x++)
-	    printf("%s\n", impl[x]);
+      for(int x= 0; x < argc-2; x++) //compone ogni riga
+	{
+	  charbin( unint(argv[2+x]), &(minterm[x])[0], var);
+	  minterm[x][0]= nascii( match( &(minterm[x])[1],'1') ); // conta gli '1' nel minterm
+	  minterm[x][var+1]='\0';
 	}
-      puts("");
-    }
+
+      switch(countdown)
+	{
+	case 2:
+	  ordinamint(*minterm, mint, var+2); // ordinamento (*minterm => &(*minterm)[0])
+
+	  while(mint) // finchè restano dei minterm non coperti da implicanti primi
+	    {
+	      if(cicli)
+		printf("%d. Riduzione\n", cicli);
+	      abc(var); // stampa i minterm
+	      puts("");
+	      for(int x= 0; x < mint; x++) 
+		printf("%s %c\n", &(minterm[x])[1], minterm[x][0]);
+	      puts("");
+	      
+	      implicanti += impli( &(*minterm)[0], &(*impl)[0], &mint, var+2 ,implicanti); // magia nera
+	      if(implicanti)
+		{
+		  puts("-implicanti primi-");
+		  abc(var);
+		  puts("");
+		  for(int x= 0; x < implicanti; x++)
+		    printf("%s\n", impl[x]);
+		  puts("");
+		}
+	      cicli++;
+	    }
+	  break;
+
+	case 1:
+	  {
+	    char tab[implicanti][mint];
+	    for(int y= 0; y < implicanti; y++)
+	      for(int x= 0; x < mint; x++)
+		tab[y][x]= compare( &(minterm[x])[1], impl[y] )== var? 'x': ' ';
+
+	    while(1)
+	      { 
+		// implementa funzione copertura minima
+
+		printf("%d. Tabella di copertura:\n", cicli);
+		abc(var);
+		for(int x= 0; x < mint; x++)
+		  printf(" %ld", unint( argv[x+2] ));
+		puts("");
+	      
+		for(int y= 0; y < implicanti; y++)
+		  {
+		    printf("%s", impl[y]);
+		    for(int x= 0; x < mint; x++)
+		      {
+			for(int s= 0; s < strl(argv[x+2]); s++)
+			  putchar(' ');
+			printf("%c", tab[y][x]);
+		      }
+		    puts("");
+		  }
+		puts("");
+		cicli ++;
+		break;
+	      }
+	  }
+	} // fine switch
+      countdown--;
+    } // fine while
+  
+
   return 0;
 }
 
@@ -52,7 +107,6 @@ void abc(unsigned int n)
 {
   for(char lettera='A';lettera-64 <= n; lettera++) // 'A' ha valore 65
     printf("%c", lettera);
-  puts("");
 }
 
 void ordinamint(char* minterm, unsigned int mint, unsigned int var)
