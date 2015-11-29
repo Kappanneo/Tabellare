@@ -35,11 +35,11 @@ int main(int argc, char *argv[])
   unsigned int countdown= 2;
   unsigned int implicanti= 0; // numero implicanti primi
   unsigned int essenziali= 0; // numero implicati primi essenziali
+  unsigned int mintermini; // numero mintermini
 
   while(countdown)
     {
-      unsigned int mintermini= argc-2; // numero mintermini
-
+      mintermini= argc-2;
       switch(countdown)
         {
         case 2:
@@ -143,9 +143,9 @@ int main(int argc, char *argv[])
           if(x<essenziali-1)
             printf(" + ");
         }
+      puts("\n");
     }
   else
-    puts("Esistono più espressioni minime equivalenti.")
-      puts("\n");
+    puts("Necessita di ulteriori riduzioni.");
   return 0;
 }
