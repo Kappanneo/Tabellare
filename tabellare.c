@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
   VET("[numero variabili] [mintermini in decimale]");
 
-  for(int x= 2; x < argc; x++)
+  for(int x= 2; x < argc; x++) //controllo i valori inseriti
     {
       if(unint(argv[x])<0)
         {
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
               a[x*(var+2)]= nascii( match( &a[x*(var+2)+1],'1') ); // conta gli '1' nel mint
               a[(x+1)*(var+2)]='\0';
             }
-          ordinamint( a, mintermini, var+2);
+          ordinamint( a, mintermini, var+2); //ordina i minterm in base al numero di 1
           while(mintermini) // finchè restano dei minterm non coperti da implicanti primi
             {
               if(cicli)
@@ -59,8 +59,9 @@ int main(int argc, char *argv[])
               for(int x= 0; x < mintermini; x++) 
                 printf("%s %c\n", &a[x*(var+2)+1], a[x*(var+2)]);
               puts("");
-              
+
               impli( a, b, &mintermini, &implicanti, var+2); // magia nera
+
               if(implicanti)
                 {
                   puts("-implicanti primi-");
@@ -75,21 +76,21 @@ int main(int argc, char *argv[])
           break;
         case 1:
           {
-            long min[mintermini];
-            int red= 1;
+            long min[mintermini]; //array di valori decimali
+            int red= 1; // 1 se è avvenuta una riduzione al ciclo precedente
 
             for(int x= 0; x < mintermini; x++)
               min[x]= unint(argv[x+2]);
 
             while(red) // finchè restano minterm non coperti da implicanti essenziali
               {
+                char tab[implicanti][mintermini];
+
                 for(int x= 0; x < mintermini; x++)
                   {
                     charbin(min[x], &a[x*(var+1)], var);
                     a[x*(var+1)+var]='\0';
                   }
-                char tab[implicanti][mintermini];
-
                 for(int y= 0; y < implicanti; y++)
                   for(int x= 0; x < mintermini; x++)
                     tab[y][x]= compare( &a[x*(var+1)], &b[y*(var+1)] )== var? 'x': ' ';
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
                   }
                 puts("");
 
-                red= essential(min, &mintermini, b, &implicanti, *tab, var+1, c, &essenziali);
+                red= essential(min, &mintermini, b, &implicanti, *tab, var+1, c, &essenziali); //altra magia
 
                 if(essenziali)
                   {
@@ -129,5 +130,22 @@ int main(int argc, char *argv[])
         }
       countdown--;
     }
+  if(!mintermini)
+    {
+      printf("%d. Espressione minima:\n", cicli);
+      for(int x= 0; x < essenziali; x++)
+        {
+          for(int y= 0; y < var; y++)
+            {
+              if(c[x*(var+1)+y]!='-')
+                printf("%c", c[x*(var+1)+y]=='1'? 'A'+y : 'a'+y);
+            }
+          if(x<essenziali-1)
+            printf(" + ");
+        }
+    }
+  else
+    puts("Esistono più espressioni minime equivalenti.")
+      puts("\n");
   return 0;
 }

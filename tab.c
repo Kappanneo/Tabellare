@@ -99,45 +99,49 @@ int essential(long* min, unsigned int* mintermini, char* impl , unsigned int* im
   int ret= 0;
 
   for(int x= 0; x < *mintermini; x++) //per ogni minterm iniziale
-    {
-      min[minterms]= min[x]; //riporta il minterm
-      for(int y= 0; y < *implicanti; y++) // per ogni implicante primo
-        if(tab[x+y*(*mintermini)]=='x') // se trova una x (e qundi il minterm è coperto dall'implicante)
-          {
-            int n= 0;
-            for(int z= y+1; z < *implicanti; z++) //per ogni implicante successivo
-              if(tab[x+z**mintermini]=='x') // se il minterm è coperto nuovamente
-                n++;
-            if(n) // se viene coperto da altri implicanti
-              minterms++;
-            else
-              {
-                n= 0;
-                for(int r=0; r < *essen; r++)
-                  if( compara( &impl[y*len], &ess[r*len])== len-1)
-                    n++;
-                if(!n)
-                  {
-                    copia( &impl[y*len], &ess[*essen*len]);
-                    *essen += 1;
-                    ret= 1;
-                  }
-              }
-            break;
-          }
-    }
-  for(int x= 0; x < *implicanti; x++)
+    for(int y= 0; y < *implicanti; y++) // per ogni implicante primo
+      if(tab[x+y*(*mintermini)]=='x') // se trova una x (e quindi il minterm è coperto dall'implicante)
+        {
+          int n= 0;
+          for(int z= y+1; z < *implicanti; z++) //per ogni implicante successivo
+            if(tab[x+z**mintermini]=='x') // se il minterm è coperto nuovamente
+              n++;
+          if(!n) // altrimenti
+            {
+              n= 0;
+              for(int r=0; r < *essen; r++)
+                if( compara( &impl[y*len], &ess[r*len])== len-1) // se non è già tra gli implicanti essenziali
+                  n++;
+              if(!n)
+                {
+                  copia( &impl[y*len], &ess[*essen*len]); //lo salvo come implicante essenziale
+                  *essen += 1;
+                  ret= 1; // registro che è stato salvato almeno un valore nuovo
+                  for(int m= 0; m < *mintermini; m++) //rimuovo tutti i mintermini che copre
+                    if(tab[m+y**mintermini]=='x')
+                      min[m]=-1;
+                }
+            }
+          break;
+        }
+  for(int x= 0; x < *implicanti; x++) // per ogni implicante
     {
       int n=0;
       for(int y= 0; y < *essen; y++)
         if( compara( &impl[x*len], &ess[y*len])== len-1)
           n++;
-      if(!n)
+      if(!n) // se non è tra quelli essenziali
         {
-          copia( &impl[x*len], &impl[imp*len]);
+          copia( &impl[x*len], &impl[imp*len]); // lo riporto
           imp++;
         }
     }
+  for(int x= 0; x < *mintermini; x++)
+    if(min[x]>=0)
+      {
+        min[minterms]= min[x];
+        minterms++;
+      }
   *implicanti= imp;
   *mintermini= minterms;
   free(*temp);
