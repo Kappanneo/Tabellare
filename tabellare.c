@@ -1,201 +1,133 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../klib.h"
-
-void abc(unsigned int); // stampa le prime n lettere dell'alfabeto
-void ordinamint(char*, unsigned int, unsigned int); // ordina le stringhe in base al primo char
-unsigned int impli(char* in, char* out, unsigned int* mint, unsigned int var, unsigned int); //it's compli
-void compose(char*, char*, char*); // compone i primi due array nel terzo
-unsigned int compare(char*, char*); // rende il numero di char uguali o indifferenti
-void over(char*, char*, unsigned int); // sovrescrive un dato numero di elementi sul primo array
+#include "tab.h"
 
 int main(int argc, char *argv[])
 {
   VET("[numero variabili] [mintermini in decimale]");
 
-  // aggiungi ulteriore controllo input
-
+  for(int x= 2; x < argc; x++)
+    {
+      if(unint(argv[x])<0)
+        {
+          fprintf(stderr, "Errore: inserire valori positivi\n");
+          return 1;
+        }
+      if(unint(argv[x])>=pot(2,unint(argv[1])))
+        {
+          fprintf(stderr, "Errore: valore %s non valido in %s variabili\n", argv[x], argv[1]);
+          return 1;
+        }
+      for(int y= x+1; y < argc; y++)
+        if(unint(argv[y])==unint(argv[x]))
+          {
+            fprintf(stderr, "Errore: valore %s ripetuto\n", argv[x]);
+            return 1;
+          }
+    }
+  
   const unsigned int var= unint(argv[1]); // numero variabili
-  char (*minterm)[var+2]= malloc(1024); // puntatore ad array di caratteri,  ogni riga: [numero di 1 nel minterm] [minterm] ['\0'] 
-  unsigned int implicanti= 0; // numero implicanti primi
-  char (*impl)[var+1]= malloc(1024); // ogni riga: [implicante] ['\0']
+  char *a= malloc(1024);
+  char *b= malloc(1024);
+  char *c= malloc(1024);
   unsigned int cicli= 0;
   unsigned int countdown= 2;
+  unsigned int implicanti= 0; // numero implicanti primi
+  unsigned int essenziali= 0; // numero implicati primi essenziali
 
   while(countdown)
     {
-      unsigned int mint= argc-2; // numero mintermini
-
-      for(int x= 0; x < argc-2; x++) //compone ogni riga
-	{
-	  charbin( unint(argv[2+x]), &(minterm[x])[0], var);
-	  minterm[x][0]= nascii( match( &(minterm[x])[1],'1') ); // conta gli '1' nel minterm
-	  minterm[x][var+1]='\0';
-	}
+      unsigned int mintermini= argc-2; // numero mintermini
 
       switch(countdown)
-	{
-	case 2:
-	  ordinamint(*minterm, mint, var+2); // ordinamento (*minterm => &(*minterm)[0])
+        {
+        case 2:
+          for(int x= 0; x < mintermini; x++)//ogni riga: [numero di 1 nel minterm] [minterm] ['\0']
+            {
+              charbin( unint(argv[x+2]), &a[x*(var+2)+1], var);
+              a[x*(var+2)]= nascii( match( &a[x*(var+2)+1],'1') ); // conta gli '1' nel mint
+              a[(x+1)*(var+2)]='\0';
+            }
+          ordinamint( a, mintermini, var+2);
+          while(mintermini) // finchè restano dei minterm non coperti da implicanti primi
+            {
+              if(cicli)
+                printf("%d. Riduzione\n", cicli);
+              ABC(var); // stampa i minterm
+              puts("");
+              for(int x= 0; x < mintermini; x++) 
+                printf("%s %c\n", &a[x*(var+2)+1], a[x*(var+2)]);
+              puts("");
+              
+              impli( a, b, &mintermini, &implicanti, var+2); // magia nera
+              if(implicanti)
+                {
+                  puts("-implicanti primi-");
+                  ABC(var);
+                  puts("");
+                  for(int x= 0; x < implicanti; x++)
+                    printf("%s\n", &b[x*(var+1)]);
+                  puts("");
+                }
+              cicli++;
+            }
+          break;
+        case 1:
+          {
+            long min[mintermini];
+            int red= 1;
 
-	  while(mint) // finchè restano dei minterm non coperti da implicanti primi
-	    {
-	      if(cicli)
-		printf("%d. Riduzione\n", cicli);
-	      abc(var); // stampa i minterm
-	      puts("");
-	      for(int x= 0; x < mint; x++) 
-		printf("%s %c\n", &(minterm[x])[1], minterm[x][0]);
-	      puts("");
-	      
-	      implicanti += impli( &(*minterm)[0], &(*impl)[0], &mint, var+2 ,implicanti); // magia nera
-	      if(implicanti)
-		{
-		  puts("-implicanti primi-");
-		  abc(var);
-		  puts("");
-		  for(int x= 0; x < implicanti; x++)
-		    printf("%s\n", impl[x]);
-		  puts("");
-		}
-	      cicli++;
-	    }
-	  break;
+            for(int x= 0; x < mintermini; x++)
+              min[x]= unint(argv[x+2]);
 
-	case 1:
-	  {
-	    char tab[implicanti][mint];
-	    for(int y= 0; y < implicanti; y++)
-	      for(int x= 0; x < mint; x++)
-		tab[y][x]= compare( &(minterm[x])[1], impl[y] )== var? 'x': ' ';
+            while(red) // finchè restano minterm non coperti da implicanti essenziali
+              {
+                for(int x= 0; x < mintermini; x++)
+                  {
+                    charbin(min[x], &a[x*(var+1)], var);
+                    a[x*(var+1)+var]='\0';
+                  }
+                char tab[implicanti][mintermini];
 
-	    while(1)
-	      { 
-		// implementa funzione copertura minima
+                for(int y= 0; y < implicanti; y++)
+                  for(int x= 0; x < mintermini; x++)
+                    tab[y][x]= compare( &a[x*(var+1)], &b[y*(var+1)] )== var? 'x': ' ';
+                printf("%d. Tabella di copertura:\n", cicli);
+                ABC(var);
+                for(int x= 0; x < mintermini; x++)
+                  printf(" %ld", min[x]);
+                puts("");
+                for(int y= 0; y < implicanti; y++)
+                  {
+                    printf("%s", &b[y*(var+1)]);
+                    for(int x= 0; x < mintermini; x++)
+                      {
+                        for(int s= min[x]==0? 1: min[x]; s > 0; s/=10)
+                          putchar(' ');
+                        printf("%c", tab[y][x]);
+                      }
+                    puts("");
+                  }
+                puts("");
 
-		printf("%d. Tabella di copertura:\n", cicli);
-		abc(var);
-		for(int x= 0; x < mint; x++)
-		  printf(" %ld", unint( argv[x+2] ));
-		puts("");
-	      
-		for(int y= 0; y < implicanti; y++)
-		  {
-		    printf("%s", impl[y]);
-		    for(int x= 0; x < mint; x++)
-		      {
-			for(int s= 0; s < strl(argv[x+2]); s++)
-			  putchar(' ');
-			printf("%c", tab[y][x]);
-		      }
-		    puts("");
-		  }
-		puts("");
-		cicli ++;
-		break;
-	      }
-	  }
-	} // fine switch
+                red= essential(min, &mintermini, b, &implicanti, *tab, var+1, c, &essenziali);
+
+                if(essenziali)
+                  {
+                    puts("-implicanti primi essenziali-");
+                    ABC(var);
+                    puts("");
+                    for(int x= 0; x < essenziali; x++)
+                      printf("%s\n", &c[x*(var+1)]);
+                    puts("");
+                  }              
+                cicli++;
+              }
+          }
+
+        }
       countdown--;
-    } // fine while
-  
-
+    }
   return 0;
-}
-
-void abc(unsigned int n)
-{
-  for(char lettera='A';lettera-64 <= n; lettera++) // 'A' ha valore 65
-    printf("%c", lettera);
-}
-
-void ordinamint(char* minterm, unsigned int mint, unsigned int var)
-{
-  for(int z= mint; z > 0; z--)
-    for(int x= 1; x < z; x++) // mint! volte
-      if(minterm[(x-1)*var] > minterm[x*var]) // minterm[a*colonne_t +b] => minterm[a][b]
-	scambia( &minterm[(x-1)*var], &minterm[x*var]);
-}
-
-unsigned int impli(char* in, char* out, unsigned int* min, unsigned int var, unsigned int imp)
-{
-  int ret= 0; // nuovi implicanti primi
-  int new= 0; //numero di minterm ridotti
-  char m='0'; // valore corrente di match
-  int x= 0;
-  unsigned int mint= *min;
-  char (*temp)[var]= malloc(2048);
-  while(x < mint) // per ogni minterm
-    {
-      while(in[x*var]==m) //se ha valore m
-	{
-	  for(int v= x+1; v < mint; v++) // lo confronto con ogni minterm
-	    if(in[v*var]==m+1) // che abbia valore m+1
-	      if( compara( &in[x*var], &in[v*var]) == var-3) // se differiscono di uno oltre al primo
-		{
-		  compose( &in[x*var+1], &in[v*var+1], &temp[new][1]); // li riduco in temp
-		  temp[new][0]= in[x*var]; // il numero di 1 è uguale
-		  for(int r= 0; r < new; r++) // per ogni implicante
-		    if( compara( &(temp[new])[1], &(temp[r])[1]) == var-2) // se è uguale ad un'altro
-		      {
-			new--; // quindi verrà sovrascritto
-			break;
-		      }
-		  new++; // passo al prossimo implicante
-		}
-	  ++x; // registro l'avanzamento sui minterm totali
-	}
-      ++m; // passo al prossimo gruppo di minterm con valore +1
-    }
-
-  for(int x= 0; x < mint; x++) // per ogni minterm
-      {
-  	int n= 0;
-  	for(int t= 0; t < new; t++) // per ogni implicante
-	  if( compare( &in[x*var+1], &(temp[t])[1]) == var-2) //se il minterm è coperto
-	    ++n;
-  	if(!n) // se un minterm non è coperto da nessun impicante
-  	  {
-  	    copia( &in[x*var+1], &out[(ret+imp)*(var-1)] ); // lo salvo come implicante primo
-  	    ret++;
-  	  }
-      }
-
-  *min= new;
-  over(in, temp[0], new*var); // sovrascrivo i minterm con i loro implicanti
-  free(*temp); // libero la locazione di temp
-  return ret;
-}
-
-void compose(char* uno, char* due, char* out)
-{
-  int x= 0;
-  while(x < strl(uno))
-    {
-      if(uno[x]==due[x])
-	out[x]=uno[x];
-      else
-	out[x]='-'; // sostituisce i caratteri differenti con '-'
-      ++x;
-    }
-  out[x]='\0';
-}
-  
-unsigned int compare(char* uno, char* due)
-{
-  unsigned int match= 0;
-  int x= 0;
-  while(x < strl(uno))
-    {
-      if(uno[x]==due[x]||due[x]=='-')
-	match++;
-      ++x;
-    }
-  return match;
-}
-
-void over(char* uno, char* due, unsigned int tot)
-{
-  for(int x= 0; x <= tot; x++)
-    uno[x]= due[x];
 }
