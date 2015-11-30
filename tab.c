@@ -147,3 +147,21 @@ int essential(long* min, unsigned int* mintermini, char* impl , unsigned int* im
   free(*temp);
   return ret;
 }
+
+int domination_row(long* min, unsigned int* mintermini, char*impl, unsigned int* implicanti, char* tab, unsigned int len)
+  {
+    char (*temp)[len]= malloc(1024); // array temporaneo per implicanti
+    unsigned int minterms= 0; // mintermini non ancora coperti alla fine della funzione
+    unsigned int imp= 0; // implicanti non ancora esaminati
+    int ret= 0;
+    return ret;
+  }
+
+int domination_col(long* min, unsigned int* mintermini, char*impl, unsigned int* implicanti, char* tab, unsigned int len)
+  {
+    char (*temp)[len]= malloc(1024); // array temporaneo per implicanti
+    unsigned int minterms= 0; // mintermini non ancora coperti alla fine della funzione
+    unsigned int imp= 0; // implicanti non ancora esaminati
+    int ret= 0;
+    return ret;
+  }
