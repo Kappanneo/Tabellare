@@ -149,9 +149,7 @@ int main(int argc, char *argv[])
                   default:
                     printf("%d. Selezione di una delle espressioni minime:\n", passaggi);
                     implicanti--;
-                    printf("-Implicante arbitrariamente essenziale-\n%s\n\n", &b[implicanti*(var+1)]);
-                    copia( &b[implicanti*(var+1)], &c[essenziali*(var+1)]);
-                    essenziali++;
+                    printf("-implicante rimosso arbitrariamente-\n%s\n\n", &b[implicanti*(var+1)]);
                     next= 1;
                   }
               }
