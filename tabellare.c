@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
             for(int x= 0; x < mintermini; x++) //salvo i minterm n decimale
               min[x]= unint(argv[x+2]);
 
-            while(next) // finchè non viene ridotta completamente
+            while(mintermini) // finchè non viene ridotta completamente
               {
                 passaggi++;
                 char tab[implicanti][mintermini]; // array bidimensionale per la tabella
@@ -129,47 +129,49 @@ int main(int argc, char *argv[])
                         for(int x= 0; x < essenziali; x++)
                           printf("%s\n", &c[x*(var+1)]);
                         puts("");
-                        ++next;
+                        next= 2;
                         break;
                       }
                   case 2:
-                    if(domination_row(min, &mintermini, b, &implicanti, *tab, var+1)) // sempre magia
+                    if(domination_row(mintermini, b, &implicanti, *tab, var+1)) // sempre magia
                       {
-                        printf("%d. Dominanza per righe:\n", passaggi);
-                        ++next;
+                        printf("%d. Applicazione dominanza per righe:\n", passaggi);
+                        next= 1;
                         break;
                       }
                   case 3:
-                    if(domination_col(min, &mintermini, b, &implicanti, *tab, var+1)) // magia molto importante
+                    if(domination_col(min, &mintermini, implicanti, *tab)) // magia molto importante
                       {
-                        printf("%d. Dominanza per colonne:\n", passaggi);
+                        printf("%d. Applicazione dominanza per colonne:\n", passaggi);
                         next= 1;
                         break;
                       }
                   default:
-                    next= 0;
+                    printf("%d. Selezione di una delle espressioni minime:\n", passaggi);
+                    implicanti--;
+                    printf("-Implicante arbitrariamente essenziale-\n%s\n\n", &b[implicanti*(var+1)]);
+                    copia( &b[implicanti*(var+1)], &c[essenziali*(var+1)]);
+                    essenziali++;
+                    next= 1;
                   }
               }
           }
         }
       countdown--;
     }
-  if(!mintermini)
+
+  printf("%d. Espressione minima:\n", passaggi);
+  for(int x= 0; x < essenziali; x++)
     {
-      printf("%d. Espressione minima:\n", passaggi);
-      for(int x= 0; x < essenziali; x++)
+      for(int y= 0; y < var; y++)
         {
-          for(int y= 0; y < var; y++)
-            {
-              if(c[x*(var+1)+y]!='-')
-                printf("%c", c[x*(var+1)+y]=='1'? 'A'+y : 'a'+y);
-            }
-          if(x<essenziali-1)
-            printf(" + ");
+          if(c[x*(var+1)+y]!='-')
+            printf("%c", c[x*(var+1)+y]=='1'? 'A'+y : 'a'+y);
         }
-      puts("\n");
+      if(x<essenziali-1)
+        printf(" + ");
     }
-  else
-    puts("Necessita ulteriori riduzioni.");
+  puts("\n");
+
   return 0;
 }

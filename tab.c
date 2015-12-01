@@ -91,7 +91,7 @@ void over(char* uno, char* due, unsigned int tot)
     due[x]= uno[x];
 }
 
-int essential(long* min, unsigned int* mintermini, char* impl , unsigned int* implicanti, char* tab , unsigned int len, char* ess, unsigned int *essen)
+_Bool essential(long* min, unsigned int* mintermini, char* impl , unsigned int* implicanti, char* tab , unsigned int len, char* ess, unsigned int *essen)
 {
   char (*temp)[len]= malloc(1024); // array temporaneo per implicanti
   unsigned int minterms= 0; // mintermini non ancora coperti alla fine della funzione
@@ -105,13 +105,19 @@ int essential(long* min, unsigned int* mintermini, char* impl , unsigned int* im
           int n= 0;
           for(int z= y+1; z < *implicanti; z++) //per ogni implicante successivo
             if(tab[x+z**mintermini]=='x') // se il minterm è coperto nuovamente
-              n++;
+              {
+                n++;
+                break;
+              }
           if(!n) // altrimenti
             {
               n= 0;
               for(int r=0; r < *essen; r++)
                 if( compara( &impl[y*len], &ess[r*len])== len-1) // se non è già tra gli implicanti essenziali
-                  n++;
+                  {
+                    n++;
+                    break;
+                  }
               if(!n)
                 {
                   copia( &impl[y*len], &ess[*essen*len]); //lo salvo come implicante essenziale
@@ -148,20 +154,78 @@ int essential(long* min, unsigned int* mintermini, char* impl , unsigned int* im
   return ret;
 }
 
-int domination_row(long* min, unsigned int* mintermini, char*impl, unsigned int* implicanti, char* tab, unsigned int len)
-  {
-    char (*temp)[len]= malloc(1024); // array temporaneo per implicanti
-    unsigned int minterms= 0; // mintermini non ancora coperti alla fine della funzione
-    unsigned int imp= 0; // implicanti non ancora esaminati
-    int ret= 0;
-    return ret;
-  }
+_Bool domination_row(unsigned int mintermini, char* impl, unsigned int* implicanti, char* tab, unsigned int len)
+{
+  _Bool ret= 0;
+  unsigned int imp= 0;
 
-int domination_col(long* min, unsigned int* mintermini, char*impl, unsigned int* implicanti, char* tab, unsigned int len)
-  {
-    char (*temp)[len]= malloc(1024); // array temporaneo per implicanti
-    unsigned int minterms= 0; // mintermini non ancora coperti alla fine della funzione
-    unsigned int imp= 0; // implicanti non ancora esaminati
-    int ret= 0;
-    return ret;
-  }
+  for(int y= 0; y < *implicanti; y++)
+    for(int z= y+1; z < *implicanti; z++)
+      {
+        int uno= 0;
+        int due= 0;
+        for(int x= 0; x < mintermini; x++)
+          {
+            if(tab[x+y*mintermini]=='x')
+              uno++;
+            if(tab[x+z*mintermini]=='x')
+              due++;
+            if(tab[x+z*mintermini]=='x' && tab[x+y*mintermini]=='x')
+              uno--, due--;
+          }
+        if(uno && !due || !uno && due)
+          {
+            ret= 1;
+            if(uno)
+              impl[z*len]='c';
+            else
+              impl[y*len]='c';
+          }
+      }
+  for(int x= 0; x < *implicanti; x++)
+    if(impl[x*len]!='c')
+      {
+        copia( &impl[x*len], &impl[imp*len]);
+        imp++;
+      }
+  *implicanti= imp;
+  return ret;
+}
+
+_Bool domination_col(long* min, unsigned int *mintermini, unsigned int implicanti, char* tab)
+{
+  _Bool ret= 0;
+  unsigned int minterms= 0;
+
+  for(int y= 0; y < *mintermini; y++)
+    for(int z= y+1; z < *mintermini; z++)
+      {
+        int uno= 0;
+        int due= 0;
+        for(int x= 0; x < implicanti; x++)
+          {
+            if(tab[y+x**mintermini]=='x')
+              uno++;
+            if(tab[z+x**mintermini]=='x')
+              due++;
+            if(tab[z+x**mintermini]=='x' && tab[y+x**mintermini]=='x')
+              uno--, due--;
+          }
+        if(uno && !due || !uno && due)
+          {
+            ret= 1;
+            if(uno)
+              min[y]=-1;
+            else
+              min[z]=-1;
+          }
+      }
+  for(int x= 0; x < *mintermini; x++)
+    if(min[x]!=-1)
+      {
+        min[minterms]= min[x];
+        minterms++;
+      }
+  *mintermini= minterms;
+  return ret;
+}
