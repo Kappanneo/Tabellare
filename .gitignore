@@ -1,4 +1,9 @@
-tabellare_old.c
-tabellare.o
-tabellare
-tab.o
+/*
+
+!.gitignore
+!README.md
+
+!makefile
+
+!.h
+!.c

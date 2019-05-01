@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "tab.h"
-#include "../klib.h"
+#include "./klib/klib.h"
 
 void ordinamint(char* bid, unsigned int row, unsigned int col)
 {

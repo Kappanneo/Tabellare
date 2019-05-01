@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../klib.h"
+#include "./klib/klib.h"
 #include "tab.h"
 
 int main(int argc, char *argv[])
